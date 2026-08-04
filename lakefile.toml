@@ -1,0 +1,10 @@
+name = "VerifiedCompiler"
+version = "0.1.0"
+defaultTargets = ["verifiedcompiler"]
+
+[[lean_lib]]
+name = "VerifiedCompiler"
+
+[[lean_exe]]
+name = "verifiedcompiler"
+root = "Main"
