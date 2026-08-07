@@ -1,6 +1,6 @@
-import VerifiedCompiler.Target
+import BaseVerifiedCompiler.Target
 
-namespace VerifiedCompiler
+namespace BaseVerifiedCompiler
 
 /-- Compile an expression to stack-machine code by post-order
 traversal: code for the left operand, code for the right operand
@@ -9,4 +9,4 @@ def Expr.compile : Expr → List Instr
   | .const n => [.push n]
   | .binop op e₁ e₂ => e₁.compile ++ e₂.compile ++ [.binop op]
 
-end VerifiedCompiler
+end BaseVerifiedCompiler

@@ -1,9 +1,12 @@
-name = "VerifiedCompiler"
+name = "BaseVerifiedCompiler"
 version = "0.1.0"
-defaultTargets = ["verifiedcompiler"]
+defaultTargets = ["BaseVerifiedCompiler", "ConditionalVerifiedCompiler", "verifiedcompiler"]
 
 [[lean_lib]]
-name = "VerifiedCompiler"
+name = "BaseVerifiedCompiler"
+
+[[lean_lib]]
+name = "ConditionalVerifiedCompiler"
 
 [[lean_exe]]
 name = "verifiedcompiler"

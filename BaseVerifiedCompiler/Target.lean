@@ -1,6 +1,6 @@
-import VerifiedCompiler.Semantics
+import BaseVerifiedCompiler.Semantics
 
-namespace VerifiedCompiler
+namespace BaseVerifiedCompiler
 
 /-- Instructions of the stack machine. The machine is purely scalar:
 it knows nothing about vectors, which are a source-language
@@ -23,4 +23,4 @@ def exec : List Instr → Stack → Option Stack
   | .binop op :: p, y :: x :: stk => exec p (op.denote x y :: stk)
   | .binop _ :: _, _ => none
 
-end VerifiedCompiler
+end BaseVerifiedCompiler

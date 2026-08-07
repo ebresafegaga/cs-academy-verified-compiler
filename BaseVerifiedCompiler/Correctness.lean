@@ -1,6 +1,6 @@
-import VerifiedCompiler.Compiler
+import BaseVerifiedCompiler.Compiler
 
-namespace VerifiedCompiler
+namespace BaseVerifiedCompiler
 
 /-- Strengthened correctness lemma: the compiled code for `e`,
 followed by any program `p`, runs like `p` started with `e`'s value
@@ -41,4 +41,4 @@ theorem Expr.compile_correct (e : Expr) :
   rw [exec] at h             -- the empty program returns its stack
   exact h
 
-end VerifiedCompiler
+end BaseVerifiedCompiler

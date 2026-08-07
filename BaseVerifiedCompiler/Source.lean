@@ -1,4 +1,4 @@
-namespace VerifiedCompiler
+namespace BaseVerifiedCompiler
 
 /-- Binary operators of the source language. -/
 inductive BinOp where
@@ -14,4 +14,4 @@ inductive Expr where
   | binop (op : BinOp) (e₁ e₂ : Expr)
   deriving Repr, DecidableEq
 
-end VerifiedCompiler
+end BaseVerifiedCompiler
