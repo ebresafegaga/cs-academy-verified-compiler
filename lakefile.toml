@@ -1,6 +1,6 @@
 name = "BaseVerifiedCompiler"
 version = "0.1.0"
-defaultTargets = ["BaseVerifiedCompiler", "ConditionalVerifiedCompiler", "verifiedcompiler"]
+defaultTargets = ["BaseVerifiedCompiler", "ConditionalVerifiedCompiler", "LoopVerifiedCompiler", "VectorVerifiedCompiler", "MatrixVerifiedCompiler", "verifiedcompiler"]
 
 [[lean_lib]]
 name = "BaseVerifiedCompiler"
@@ -8,6 +8,15 @@ name = "BaseVerifiedCompiler"
 [[lean_lib]]
 name = "ConditionalVerifiedCompiler"
 
+[[lean_lib]]
+name = "LoopVerifiedCompiler"
+
+[[lean_lib]]
+name = "VectorVerifiedCompiler"
+
 [[lean_exe]]
 name = "verifiedcompiler"
 root = "Main"
+
+[[lean_lib]]
+name = "MatrixVerifiedCompiler"
