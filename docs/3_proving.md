@@ -14,33 +14,34 @@ In standard software engineering, we write Unit Tests. We give a function some i
 But as computer scientist Edsger W. Dijkstra famously said: 
 > *"Program testing can be used to show the presence of bugs, but never to show their absence."*
 
-> 🧠 **Check My Thinking: The Limits of Testing**
-> 
-> How many possible `Expr` (Abstract Syntax Trees) exist? Could we write a test for every single one?
+There are **infinite** possible expressions. You can always add one more `+ 1` to a tree. Therefore, no matter how many unit tests you write, you can never test every possible input. We need a mathematical proof to cover the concept of "infinity".
 
-<details>
-<summary>Answer</summary>
+### Concept: Lean as a Theorem Prover
 
-> There are **infinite** possible expressions. You can always add one more `+ 1` to a tree. Therefore, no matter how many unit tests you write, you can never test every possible input. We need a mathematical proof to cover the concept of "infinity".
-</details>
+Why did we use Lean for this project? Why not Python or Java? Lean is purely functional—meaning variables never change state—which allows us to treat code like mathematical equations. 
 
-### Concept: The Main Theorem
+Because of this, Lean's true purpose isn't just to write code; it is designed to write **Proofs**. The goal of a proof is to use strict mathematical logic to show that a statement is universally true or false. In traditional math, you do this with a pencil and paper, and it's easy to make a small logical error. In Lean, we use code to *ensure* our logic is completely flawless. If our proof has a hole in it, Lean simply refuses to compile.
 
-Let's state what we want to prove. 
+### Concept: Theorems vs. Proofs
+
+In math, a **Theorem** is a statement that we claim is true. For example: "The sum of two even numbers is always even." 
+A **Proof** is the step-by-step logical argument that actually demonstrates *why* the theorem is true.
+
+Let's state the main Theorem we want to prove for our compiler:
 If we take *any* expression `e`, compile it, and run it on an empty stack `[]`, we should get the exact same answer as if we just evaluated `e` directly.
 
-In Lean, we write this as a **Theorem**:
+In Lean, we write the theorem statement like a function signature:
 ```lean
 theorem Expr.compile_correct (e : Expr) : 
     exec e.compile [] = some [e.eval]
-
 ```
 
-Think of a theorem like a function signature. The `theorem` keyword is just like `def`, but instead of returning a value, it returns a mathematical proof. The "code" we write inside the theorem is the **proof**. If our proof is wrong, Lean simply won't compile.
+The `theorem` keyword is just like `def`. But instead of returning a normal value like an `Int`, it returns a mathematical proof. The "code" we write inside the theorem's body is the actual **proof**. 
 
 ## The Tactics Toolbox
 
-Lean proofs are written using **Tactics**. Think of the proof window in Lean as a puzzle game. You start with a "Goal" (your theorem), and you use tactics to manipulate the equation until the left side perfectly matches the right side. 
+Lean proofs are written interactively using **Tactics**. 
+The whole point of an interactive proof is that you can't just prove everything at once. The Lean interface acts like a puzzle game. You start with a big "Goal" (your theorem), and you use tactics to manipulate the equation, splitting the problem into smaller, manageable steps, until the left side perfectly matches the right side.
 
 > 📘 **LEAN SYNTAX: Tactic Mode**
 > When you see the `by` keyword, it means Lean is switching from "Programming Mode" to "Tactic Mode" (the puzzle game). 
@@ -66,7 +67,6 @@ If we write `rw [compile]`, Lean will look at how we defined the `compile` funct
 > `exec [.push n] []`
 </details>
 
-
 ## Proving Compiler Correctness
 
 ### Concept: Structural Induction
@@ -79,22 +79,49 @@ Induction has two steps:
 
 If the leaves are correct, and every branch built on them is correct, the whole infinite tree must be correct!
 
-> 📘 **LEAN SYNTAX: Induction Magic**
-> In the code below, you'll see `generalizing p stk`. This is advanced Lean magic that allows our lists to change during the proof. Don't worry about how it works under the hood right now—just know it's required here.
-> Also, when we write `| binop op e₁ e₂ ih₁ ih₂ =>`, Lean automatically creates our Induction Hypotheses and binds them to the names `ih₁` and `ih₂` for us to use!
+### The Direct Approach: Why It Fails
 
-### Concept: The Helper Lemma
+Let's open up `Correctness.lean` and try to prove our theorem directly using induction.
 
-We hit a snag. When we compile a `binop e1 e2`, the code is `e1.compile ++ e2.compile ++ [.binop op]`.
-When the machine runs `e2.compile`, the stack **is not empty**! It already has the result of `e1` sitting on it. Also, there is more code coming after it (the `binop`).
+```lean
+theorem Expr.compile_correct (e : Expr) : 
+    exec e.compile [] = some [e.eval] := by
+  induction e with
+  | const n =>
+    -- Base Case: this is easy!
+    rw [compile]  -- exec [.push n] []
+    rw [exec]     -- some [n]
+    rw [eval]     -- some [n]
+  | binop op e₁ e₂ ih₁ ih₂ =>
+    -- Inductive Step: Here is where we get stuck!
+    rw [compile] 
+    -- Goal: exec (e₁.compile ++ e₂.compile ++ [.binop op]) [] = some [op.denote e₁.eval e₂.eval]
+```
 
-Our main theorem only talks about an *empty* stack and *no* extra code. We need a stronger helper theorem (a **lemma**) that proves our compiler works no matter what is already on the stack, and no matter what code comes after!
+We hit a massive snag. Our Induction Hypothesis `ih₁` says that `exec e₁.compile [] = some [e₁.eval]`. It *only* works if the stack is completely empty `[]` and there is no other code running after it.
+
+But look at our goal! We are trying to run `exec (e₁.compile ++ e₂.compile ++ [.binop op]) []`.
+Because our compiler chains lists together with `++`, when `e₁` finishes executing, the machine immediately needs to execute `e₂` and the `binop`. We can't use our induction hypothesis because it doesn't match the situation!
+
+> 🤔 **Thinking Block**
+>
+> Think about how a stack machine actually works. When it finishes running `e₁.compile`, is the stack empty? No! It has the result of `e₁` sitting on it. When it starts running `e₂.compile`, the stack already has something on it!
+
+### Concept: Strengthening the Theorem
+
+To solve this, we need to discover a key intuition in mathematics: **Sometimes it is easier to prove a harder problem.** 
+
+Our main theorem is too weak. It only talks about empty stacks and programs running in isolation. We need to **strengthen** our claim. We need a helper theorem (a **lemma**) that proves our compiler works *no matter what is already on the stack*, and *no matter what code comes after it*!
+
+If we can prove that running `e.compile ++ p` (our compiled code followed by some extra program `p`) on *any* starting stack `stk` behaves perfectly, then we can easily solve our main theorem just by plugging in `[]` for `p` and `[]` for `stk`.
 
 > 💡 **HINT: Lemma Toolbox**
 > You'll need some math facts about lists to complete this proof. You can't guess these names, so here they are:
 > - `List.singleton_append`: Proves that `[x] ++ list` is the same as `x :: list`.
 > - `List.append_assoc`: Proves that `(A ++ B) ++ C` is the same as `A ++ (B ++ C)`.
 > - `List.append_nil`: Proves that `list ++ []` is just `list`.
+
+### Proving the Helper Lemma
 
 > 💻 **ACTION: Open `Correctness.lean`**
 >
@@ -108,6 +135,7 @@ Our main theorem only talks about an *empty* stack and *no* extra code. We need 
 > 
 > theorem Expr.exec_compile_append (e : Expr) (p : List Instr) (stk : Stack) :
 >     exec (e.compile ++ p) stk = exec p (e.eval :: stk) := by
+>   -- Notice `generalizing p stk`: this allows our lists to change during the proof!
 >   induction e generalizing p stk with
 >   | const n =>
 >     -- We want to unfold how `compile` works for a const
@@ -126,7 +154,8 @@ Our main theorem only talks about an *empty* stack and *no* extra code. We need 
 >     rw [List.append_assoc (e₁.compile ++ e₂.compile) [Instr.binop op] p]
 >     rw [List.append_assoc e₁.compile e₂.compile ([Instr.binop op] ++ p)]
 >     
->     -- ih₁ and ih₂ are our Induction Hypotheses (our assumption that e1 and e2 work)
+>     -- ih₁ and ih₂ are our incredibly strong Induction Hypotheses!
+>     -- They work for ANY stack and ANY following program.
 >     -- Let's run e1's code by rewriting with ih₁
 >     rw [ih₁]                    
 >     -- YOUR TURN: Run e2's code by rewriting with its induction hypothesis!
