@@ -367,6 +367,9 @@ Because `compile` just returns a Lean `List Instr`, we need a helper function to
 > Feel free to play around with `myProgram` and change the math expression to whatever you want!
 >
 > ```lean
+> import MyCertifiedCompiler
+> open MyCertifiedCompiler
+>
 > instance : ToString Instr where
 >   toString
 >     | .push n => s!"PUSH {n}"
@@ -380,12 +383,18 @@ Because `compile` just returns a Lean `List Instr`, we need a helper function to
 > def main : IO Unit := do
 >   -- Example expression: (5 + 3) * 2
 >   let myProgram := Expr.binop .mul (Expr.binop .add (Expr.const 5) (Expr.const 3)) (Expr.const 2)
+>   
+>   IO.println s!"Evaluator Result: {myProgram.eval}"
+>   
 >   let machineCode := myProgram.compile
->   let asmText := serialize machineCode
->   IO.println asmText
+>   IO.println "\nCompiled Machine Code:"
+>   IO.println (serialize machineCode)
+>   
+>   let result := exec machineCode []
+>   IO.println s!"\nExecution Result: {repr result}"
 > ```
 > 
-> **To run this:** Open your terminal and run `lake exe verifiedcompiler`. You should see your compiler spit out the actual stack machine instructions!
+> **To run this:** Open your terminal and run `lake exe certifiedcompiler`. You should see your compiler spit out the actual stack machine instructions!
 
 ### Wrap up
 
