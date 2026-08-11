@@ -225,12 +225,11 @@ Lean has special syntax for lists to make this easier to read:
 >   | [], stk => some stk
 >   
 >   -- Case 2: We have a `push` instruction followed by the rest of the program `p`.
->   -- We recursively call `exec` on `p`, adding `n` to the top of the stack (`n :: stk`).
->   | .push n :: p, stk => exec p (n :: stk)
+>   | .push n :: p, stk => -- Call `exec` on `p`, adding `n` to the top of the stack (`n :: stk`).
 >   
 >   -- Case 3: We have a `binop` instruction. We need exactly two items on top of the stack.
 >   -- Remember, the top item (`y`) is the right operand!
->   | .binop op :: p, y :: x :: stk => -- Call exec on p, using op.denote on x and y
+>   | .binop op :: p, y :: x :: stk => -- Call `exec` on `p`, using `op.denote` on `x` and `y`
 >   
 >   -- Case 4: A `binop` instruction, but we didn't match the case above (meaning < 2 items).
 >   | .binop _ :: _, _ => none
