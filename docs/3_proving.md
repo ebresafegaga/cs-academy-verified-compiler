@@ -95,37 +95,73 @@ Why does this work? Let's look at the expression `(3 + 4) * 5`:
 
 By proving just the Base Case and the Inductive Step, a chain reaction of logic travels from the bottom of the tree all the way to the top. If the leaves are correct, and every branch built on them correctly combines them, the whole infinite tree must be correct!
 
-### The Direct Approach: Why It Fails
+### The Direct Approach: Let's Try It!
 
 Let's open up `Correctness.lean` and try to prove our theorem directly using induction.
 
+> 💻 **ACTION: Open `Correctness.lean`**
+>
+> Write out the main theorem and set up the induction.
+> Let's try to solve the base case first! Use the `rw` tactic to unfold `compile`, then `exec`, and finally `eval` until the goal is solved.
+>
+> **Try to solve the `const n` case before moving on!**
+>
+> ```lean
+> theorem Expr.compile_correct (e : Expr) : 
+>     exec e.compile [] = some [e.eval] := by
+>   induction e with
+>   | const n =>
+>     -- YOUR TURN: Use `rw` to unfold `compile`, `exec`, and `eval`!
+>     
+>   | binop op e₁ e₂ ih₁ ih₂ =>
+>     -- We'll tackle this next!
+> ```
+
+<details>
+<summary>Answer (Base Case)</summary>
+
 ```lean
-theorem Expr.compile_correct (e : Expr) : 
-    exec e.compile [] = some [e.eval] := by
-  induction e with
   | const n =>
-    -- Base Case: this is easy!
-    rw [compile]  -- exec [.push n] []
-    rw [exec]     -- some [n]
-    rw [eval]     -- some [n]
-  | binop op e₁ e₂ ih₁ ih₂ =>
-    -- Inductive Step: Here is where we get stuck!
-    rw [compile] 
-    -- Goal: exec (e₁.compile ++ e₂.compile ++ [.binop op]) [] = some [op.denote e₁.eval e₂.eval]
+    rw [compile]  -- This turns e.compile into [.push n]
+    rw [exec]     -- This executes the push, resulting in a stack of some [n]
+    rw [eval]     -- This turns e.eval into n, making both sides match!
 ```
+</details>
 
-We hit a massive snag. Our Induction Hypothesis `ih₁` says that `exec e₁.compile [] = some [e₁.eval]`. It *only* works if the stack is completely empty `[]` and there is no other code running after it.
+Now that we crushed the base case, let's try the inductive step for the `binop` case.
 
-But look at our goal! We are trying to run `exec (e₁.compile ++ e₂.compile ++ [.binop op]) []`.
-Because our compiler chains lists together with `++`, when `e₁` finishes executing, the machine immediately needs to execute `e₂` and the `binop`. We can't use our induction hypothesis because it doesn't match the situation!
+> 💻 **ACTION: Try the `binop` case**
+>
+> Start by unfolding `compile`. Use your Induction Hypotheses (`ih₁` and `ih₂`) to try and simplify the branches. 
+> 
+> **Try this for the expr case before moving on! See how far you can get.**
+
+You might have hit a snag now. 
+
+Let's look at what happens when you type `rw [compile]`. The goal becomes:
+`exec (e₁.compile ++ e₂.compile ++ [.binop op]) [] = some [op.denote e₁.eval e₂.eval]`
+
+You probably tried to use your Induction Hypothesis `ih₁`. But it doesn't work! `ih₁` says that `exec e₁.compile [] = some [e₁.eval]`. It *only* works if the stack is completely empty `[]` and there is no other code running after it.
+
+But look at our goal. We are trying to run `exec (e₁.compile ++ e₂.compile ++ [.binop op]) []`.
+Because our compiler chains lists together with `++`, when `e₁` finishes executing, the machine immediately needs to execute `e₂` and the `binop`. We can't use our induction hypothesis because the situation doesn't match!
 
 > 🤔 **Thinking Block**
 >
 > Think about how a stack machine actually works. When it finishes running `e₁.compile`, is the stack empty? No! It has the result of `e₁` sitting on it. When it starts running `e₂.compile`, the stack already has something on it!
 
+Since we are stuck, we are going to abandon this proof for now. In Lean, we can use the `sorry` tactic to tell the compiler "I give up for now, assume this is true." 
+Replace your proof with this and let's move on:
+
+```lean
+theorem Expr.compile_correct (e : Expr) : 
+    exec e.compile [] = some [e.eval] := by
+  sorry -- We will come back to this!
+```
+
 ### Concept: Strengthening the Theorem
 
-To solve this, we need to discover a key intuition in mathematics: **Sometimes it is easier to prove a harder problem.** 
+To solve this, we need to discover a key intuition in mathematics: **Sometimes it is easier to prove a more general problem.** 
 
 Our main theorem is too weak. It only talks about empty stacks and programs running in isolation. We need to **strengthen** our claim. We need a helper theorem (a **lemma**) that proves our compiler works *no matter what is already on the stack*, and *no matter what code comes after it*!
 
