@@ -1,1 +1,1 @@
-# A Simple Verified Tensor Compiler
+# A Simple Verified Compiler
