@@ -17,6 +17,16 @@ Lean is increasingly being used by mathematicians to formalize complex math (lik
 Before you begin, you'll need to install Lean on your computer. It comes with a great VS Code extension that will give you interactive feedback as you write your code and proofs.
 
 > 🛠️ **Install Lean Here:** [https://lean-lang.org/install/](https://lean-lang.org/install/)
+> 
+> 🪟 **Windows Users:** We highly recommend using WSL (Windows Subsystem for Linux). If you are running Windows, please ask one of the volunteers for setup instructions!
+
+Once Lean is installed (which also automatically installs Git for you), clone this repository to your computer and open it in VS Code:
+
+```bash
+git clone https://github.com/ebresafegaga/cs-academy-verified-compiler.git
+cd cs-academy-verified-compiler
+code .
+```
 
 ---
 
