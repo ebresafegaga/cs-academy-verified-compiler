@@ -147,6 +147,7 @@ If it's a `binop` (like `add e1 e2`), we need to evaluate the left branch (`e1`)
 
 <details>
 <summary>Answer</summary>
+
 ```lean
 /-- Denotation of a binary operator as a function on integers. -/
 def BinOp.denote : BinOp → Int → Int → Int
