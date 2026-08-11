@@ -72,6 +72,57 @@ def cube_area (length : Int) : Int :=
 ### Concept: Pattern Matching & Tree Traversal
 In functional programming, we process inductive types using **pattern matching**. Since our `Expr` can be either a `const` or a `binop`, we must define what happens in both cases.
 
+Let's take a closer look at the syntax for pattern matching. Let's revisit the `TrafficLight` example from Lesson 1 and define a new `Action` type:
+
+```lean
+inductive Action where
+  | stop
+  | yield
+  | go
+```
+
+The long way to pattern match in Lean is to name your arguments, use `:=`, and then use the `match ... with` syntax:
+
+```lean
+def getAction (light : TrafficLight) : Action :=
+  match light with
+  | TrafficLight.red => Action.stop
+  | TrafficLight.yellow => Action.yield
+  | TrafficLight.green => Action.go
+```
+
+But Lean gives us a shortcut! We can write the function signature using **arrows** (`→`) as another way to write arguments. For example, a function that takes a `TrafficLight` and returns an `Action` has the type `TrafficLight → Action`.
+
+When we define a function this way, we drop the `:=` and the `match ... with` syntax, and immediately start listing our cases. This effectively "takes one element" from the left side (the argument) and maps it to a return value on the right of the `=>` arrow. Notice we don't name the argument or use `:=`:
+
+```lean
+def getActionShortcut : TrafficLight → Action
+  | TrafficLight.red => Action.stop
+  | TrafficLight.yellow => Action.yield
+  | TrafficLight.green => Action.go
+```
+
+What if we have two arguments? The arrow syntax just chains them together: `TrafficLight → TrafficLight → Action` means a function taking two lights and returning an action. We can pattern match on both simultaneously by separating the cases with a comma:
+
+```lean
+def intersectionAction : TrafficLight → TrafficLight → Action
+  | TrafficLight.red, TrafficLight.red => Action.stop
+  | TrafficLight.green, TrafficLight.red => Action.go
+  | _, _ => Action.yield
+```
+
+You also don't *have* to pattern match on every argument! We only need to pattern match on the ones we care about. For example, if we name the first argument, we can just pattern match on the second:
+
+```lean
+def doAction (driver : String) : TrafficLight → Action
+  | TrafficLight.red => Action.stop
+  | _ => Action.go
+```
+
+Finally, Lean has a few neat shortcuts that use dots. First, if Lean already knows the expected type, we can drop the type name and just use a dot (e.g., using `.stop` instead of `Action.stop`). 
+
+Second, we can use middle dots `·` (typed as `\.`) to create quick, anonymous functions without naming the arguments! If we want to return a function that adds two numbers together, instead of writing out `fun x y => x + y`, we can simply write `(· + ·)`. This works for any function. For example, if you wanted a function that squares a number, you could write `(power · 2)`, or a function that takes the square root, `(sqrt ·)`.
+
 If it's a `binop` (like `add e1 e2`), we need to evaluate the left branch (`e1`), evaluate the right branch (`e2`), and then add them together. Because `e1` and `e2` are also expressions, our function will call itself. This is **recursion**!
 
 > 💡 **HINT: Pattern Matching Order**
