@@ -71,13 +71,29 @@ If we write `rw [compile]`, Lean will look at how we defined the `compile` funct
 
 ### Concept: Structural Induction
 
-How do we prove something for an infinite number of trees? We use **Induction**.
-Induction has two steps:
+How do we prove something works for an **infinite** number of possible expressions? We can't test them all one by one. Instead, we use a mathematical superpower called **Induction**.
 
-1. **The Base Case:** Prove it works for the simplest part of the tree (the leaves). For us, that's `.const n`.
-2. **The Inductive Step:** Assume it works for the left and right branches (we call this the *Induction Hypothesis*). Prove that if the branches work, combining them with a `.binop` also works.
+#### The Domino Effect
+To build your intuition for induction, imagine an infinitely long line of dominoes. If I ask you to prove that *every single domino will fall*, how would you do it? You only need to prove two things:
 
-If the leaves are correct, and every branch built on them is correct, the whole infinite tree must be correct!
+1. **The Base Case:** You knock over the very first domino.
+2. **The Inductive Step:** You prove a rule: *If* a domino falls, it is positioned perfectly to knock over the next one.
+
+If you prove those two rules, you have mathematically proven the entire infinite line will fall. You don't have to check the 100th domino or the 1,000,000th domino. The logic guarantees it.
+
+#### Induction on Trees
+Our AST `Expr` isn't a straight line of dominoes; it's a branching tree. But the exact same logic applies! This is called **Structural Induction**. We build our proof from the bottom up.
+
+Instead of dominoes, imagine building a complex Lego structure. 
+1. **The Base Case:** Prove that the simplest, most basic building blocks (the leaves of our tree) work correctly. For our compiler, the leaves are always constant numbers (`.const n`). 
+2. **The Inductive Step:** We write a rule for combining pieces. We say: *Assume* that the left branch and the right branch are already working perfectly (we call this assumption the **Induction Hypothesis**). Now, prove that if you connect two working branches with a binary operator (`.binop`), the new bigger piece also works perfectly.
+
+Why does this work? Let's look at the expression `(3 + 4) * 5`:
+- First, we know `3`, `4`, and `5` compile correctly because they are Base Cases. 
+- Next, look at the `+` branch. Because its children (`3` and `4`) compiled correctly, our Inductive Step guarantees the `+` branch will also compile correctly!
+- Finally, look at the `*` branch. Because its children (the `+` branch and `5`) compiled correctly, our Inductive Step guarantees the `*` branch will compile correctly!
+
+By proving just the Base Case and the Inductive Step, a chain reaction of logic travels from the bottom of the tree all the way to the top. If the leaves are correct, and every branch built on them correctly combines them, the whole infinite tree must be correct!
 
 ### The Direct Approach: Why It Fails
 
