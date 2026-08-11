@@ -66,6 +66,8 @@ Our stack machine only has two types of instructions:
    ---                 ---                 ---         ---
 ```
 
+You can play around with a stack machine with the simulator [here](stack_machine.html).
+
 ### Concept: Reverse Polish Notation (RPN)
 
 If we only have a stack, how do we write the math equation `(3 + 4) * 5`? We use **Reverse Polish Notation (RPN)**. RPN writes the numbers first, followed by the operator.

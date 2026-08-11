@@ -1,0 +1,127 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Stack Machine Simulator</title>
+</head>
+<body>
+    <h1>Stack Machine Simulator</h1>
+    
+    <div>
+        <h3>Controls</h3>
+        <div>
+            <button onclick="push(0)">PUSH 0</button>
+            <button onclick="push(1)">PUSH 1</button>
+            <button onclick="push(2)">PUSH 2</button>
+            <button onclick="push(3)">PUSH 3</button>
+            <button onclick="push(4)">PUSH 4</button>
+            <button onclick="push(5)">PUSH 5</button>
+            <button onclick="push(6)">PUSH 6</button>
+            <button onclick="push(7)">PUSH 7</button>
+            <button onclick="push(8)">PUSH 8</button>
+            <button onclick="push(9)">PUSH 9</button>
+        </div>
+        <br>
+        <div>
+            <input type="number" id="pushValue" style="width: 60px;" placeholder="num">
+            <button onclick="pushCustom()">PUSH</button>
+        </div>
+        <br>
+        <div>
+            <button onclick="operate('ADD')">ADD</button>
+            <button onclick="operate('SUB')">SUB</button>
+            <button onclick="operate('MUL')">MUL</button>
+        </div>
+        <br>
+        <div>
+            <button onclick="resetMachine()">RESET</button>
+        </div>
+    </div>
+    
+    <div style="display: flex; gap: 40px; margin-top: 20px;">
+        <div>
+            <h3>Stack</h3>
+            <!-- Using a listbox to show the stack elements -->
+            <select id="stackList" size="15" style="width: 150px; font-family: monospace;"></select>
+        </div>
+        
+        <div>
+            <h3>History</h3>
+            <!-- Using a listbox to show the history of instructions -->
+            <select id="historyList" size="15" style="width: 150px; font-family: monospace;"></select>
+        </div>
+    </div>
+
+    <script>
+        let stack = [];
+        
+        function updateStackUI() {
+            const stackList = document.getElementById('stackList');
+            stackList.innerHTML = '';
+            // Display stack with top element at the top visually
+            for (let i = stack.length - 1; i >= 0; i--) {
+                const option = document.createElement('option');
+                option.text = stack[i];
+                stackList.add(option);
+            }
+        }
+        
+        function logHistory(instruction) {
+            const historyList = document.getElementById('historyList');
+            const option = document.createElement('option');
+            option.text = instruction;
+            historyList.add(option);
+            // Auto scroll to bottom
+            historyList.scrollTop = historyList.scrollHeight;
+        }
+
+        function push(value) {
+            stack.push(value);
+            logHistory('PUSH ' + value);
+            updateStackUI();
+        }
+        
+        function pushCustom() {
+            const input = document.getElementById('pushValue');
+            const value = parseFloat(input.value);
+            if (!isNaN(value)) {
+                push(value);
+                input.value = '';
+            } else {
+                alert("Please enter a valid number to push.");
+            }
+        }
+        
+        function operate(op) {
+            if (stack.length < 2) {
+                alert("Warning: Not enough elements on the stack to perform " + op + ".");
+                return;
+            }
+            
+            // Pop the top two elements
+            // For standard stack operations: if stack has [A, B] with B on top,
+            // A - B means (Next) - (Top)
+            const topElement = stack.pop();
+            const nextElement = stack.pop();
+            
+            let result;
+            if (op === 'ADD') {
+                result = nextElement + topElement;
+            } else if (op === 'SUB') {
+                result = nextElement - topElement;
+            } else if (op === 'MUL') {
+                result = nextElement * topElement;
+            }
+            
+            stack.push(result);
+            logHistory(op);
+            updateStackUI();
+        }
+        
+        function resetMachine() {
+            stack = [];
+            document.getElementById('historyList').innerHTML = '';
+            updateStackUI();
+        }
+    </script>
+</body>
+</html>
