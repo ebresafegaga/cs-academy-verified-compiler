@@ -38,34 +38,6 @@ theorem Expr.compile_correct (e : Expr) :
 
 The `theorem` keyword is just like `def`. But instead of returning a normal value like an `Int`, it returns a mathematical proof. The "code" we write inside the theorem's body is the actual **proof**. 
 
-## The Tactics Toolbox
-
-Lean proofs are written interactively using **Tactics**. 
-The whole point of an interactive proof is that you can't just prove everything at once. The Lean interface acts like a puzzle game. You start with a big "Goal" (your theorem), and you use tactics to manipulate the equation, splitting the problem into smaller, manageable steps, until the left side perfectly matches the right side.
-
-> 📘 **LEAN SYNTAX: Tactic Mode**
-> When you see the `by` keyword, it means Lean is switching from "Programming Mode" to "Tactic Mode" (the puzzle game). 
-> When we use tactics like `rw`, we put the rules we want to rewrite with in square brackets, like `rw [compile]`.
-
-### Concept: The `rw` (Rewrite) Tactic
-
-Our main tool in this lesson is `rw` (rewrite). It substitutes equals for equals.
-If we know that `A = B`, and we have an equation `A + 1 = 5`, we can use `rw` to turn it into `B + 1 = 5`.
-
-We can also use `rw` to "unfold" our functions.
-If we write `rw [compile]`, Lean will look at how we defined the `compile` function in Lesson 2, and replace the word `compile` with the actual code we wrote!
-
-> 🤔 **Thinking Block**
->
-> If `e` is a `.const n`, what will the equation `exec e.compile []` look like after we use the tactic `rw [compile]`?
-
-<details>
-<summary>Answer</summary>
-
-> From Lesson 2, we know `.const n` compiles to `[.push n]`.
-> So, it will rewrite `e.compile` into `[.push n]`, resulting in:
-> `exec [.push n] []`
-</details>
 
 ## Proving Compiler Correctness
 
@@ -95,6 +67,37 @@ Why does this work? Let's look at the expression `(3 + 4) * 5`:
 
 By proving just the Base Case and the Inductive Step, a chain reaction of logic travels from the bottom of the tree all the way to the top. If the leaves are correct, and every branch built on them correctly combines them, the whole infinite tree must be correct!
 
+
+### The Tactics Toolbox
+
+Lean proofs are written interactively using **Tactics**. 
+The whole point of an interactive proof is that you can't just prove everything at once. The Lean interface acts like a puzzle game. You start with a big "Goal" (your theorem), and you use tactics to manipulate the equation, splitting the problem into smaller, manageable steps, until the left side perfectly matches the right side.
+
+> 📘 **LEAN SYNTAX: Tactic Mode**
+> When you see the `by` keyword, it means Lean is switching from "Programming Mode" to "Tactic Mode" (the puzzle game). 
+> When we use tactics like `rw`, we put the rules we want to rewrite with in square brackets, like `rw [compile]`.
+
+### Concept: The `rw` (Rewrite) Tactic
+
+Our main tool in this lesson is `rw` (rewrite). It substitutes equals for equals.
+If we know that `A = B`, and we have an equation `A + 1 = 5`, we can use `rw` to turn it into `B + 1 = 5`.
+
+We can also use `rw` to "unfold" our functions.
+If we write `rw [compile]`, Lean will look at how we defined the `compile` function in Lesson 2, and replace the word `compile` with the actual code we wrote!
+
+> 🤔 **Thinking Block**
+>
+> If `e` is a `.const n`, what will the equation `exec e.compile []` look like after we use the tactic `rw [compile]`?
+
+<details>
+<summary>Answer</summary>
+
+> From Lesson 2, we know `.const n` compiles to `[.push n]`.
+> So, it will rewrite `e.compile` into `[.push n]`, resulting in:
+> `exec [.push n] []`
+</details>
+
+
 ### The Direct Approach: Let's Try It!
 
 Let's open up `Correctness.lean` and try to prove our theorem directly using induction.
@@ -121,6 +124,9 @@ Let's open up `Correctness.lean` and try to prove our theorem directly using ind
 <summary>Answer (Base Case)</summary>
 
 ```lean
+theorem Expr.compile_correct (e : Expr) : 
+    exec e.compile [] = some [e.eval] := by
+  induction e with
   | const n =>
     rw [compile]  -- This turns e.compile into [.push n]
     rw [exec]     -- This executes the push, resulting in a stack of some [n]
